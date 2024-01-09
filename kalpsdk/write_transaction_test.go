@@ -10,7 +10,7 @@ import (
 
 	//Third party Libs
 	"github.com/hyperledger/fabric-protos-go/peer"
-	"github.com/p2eengineering/kalp-sdk/mocks"
+	"github.com/p2eengineering/kalp-sdk-public/mocks"
 	"github.com/stretchr/testify/require"
 )
 
