@@ -243,6 +243,12 @@ func (ctx *TransactionContext) CreateCompositeKey(objectType string, attributes 
 	return ctx.GetStub().CreateCompositeKey(objectType, attributes)
 }
 
+// SplitCompositeKey documentation can be found in interfaces.go
+
+func (ctx *TransactionContext) SplitCompositeKey(compositeKey string) (string, []string, error) {
+	return ctx.GetStub().SplitCompositeKey(compositeKey)
+}
+
 // GetTxTimestamp returns the timestamp when the transaction was created. The timestamp
 // is extracted from the transaction's ChannelHeader, which ensures that it indicates the
 // client's timestamp and has the same value across all endorsers.
