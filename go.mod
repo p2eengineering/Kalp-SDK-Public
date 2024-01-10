@@ -1,6 +1,6 @@
 module github.com/p2eengineering/kalp-sdk-public
 
-go 1.19
+go 1.18
 
 require (
 	github.com/golang/protobuf v1.5.3
