@@ -174,7 +174,7 @@ func (s byInitialism) Less(i, j int) bool {
 
 // Removes leading whitespaces
 func trim(str string) string {
-	return strings.TrimSpace(str)
+	return strings.Trim(str, " ")
 }
 
 // Shortcut to strings.ToUpper()
@@ -231,7 +231,7 @@ func ToHumanNameLower(name string) string {
 		if !w.IsInitialism() {
 			out = append(out, lower(w.GetOriginal()))
 		} else {
-			out = append(out, trim(w.GetOriginal()))
+			out = append(out, w.GetOriginal())
 		}
 	}
 
@@ -244,7 +244,7 @@ func ToHumanNameTitle(name string) string {
 
 	out := make([]string, 0, len(in))
 	for _, w := range in {
-		original := trim(w.GetOriginal())
+		original := w.GetOriginal()
 		if !w.IsInitialism() {
 			out = append(out, Camelize(original))
 		} else {
@@ -264,7 +264,7 @@ func ToJSONName(name string) string {
 			out = append(out, lower(w))
 			continue
 		}
-		out = append(out, Camelize(trim(w)))
+		out = append(out, Camelize(w))
 	}
 	return strings.Join(out, "")
 }
@@ -343,7 +343,7 @@ type zeroable interface {
 func IsZero(data interface{}) bool {
 	v := reflect.ValueOf(data)
 	// check for nil data
-	switch v.Kind() { //nolint:exhaustive
+	switch v.Kind() {
 	case reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
 		if v.IsNil() {
 			return true
@@ -356,7 +356,7 @@ func IsZero(data interface{}) bool {
 	}
 
 	// continue with slightly more complex reflection
-	switch v.Kind() { //nolint:exhaustive
+	switch v.Kind() {
 	case reflect.String:
 		return v.Len() == 0
 	case reflect.Bool:

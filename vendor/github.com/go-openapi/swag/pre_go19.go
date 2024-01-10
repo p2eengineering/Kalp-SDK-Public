@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:build !go1.9
+// +build !go1.9
+
 package swag
 
 import (
@@ -20,46 +23,48 @@ import (
 )
 
 // indexOfInitialisms is a thread-safe implementation of the sorted index of initialisms.
-// Since go1.9, this may be implemented with sync.Map.
+// Before go1.9, this may be implemented with a mutex on the map.
 type indexOfInitialisms struct {
-	sortMutex *sync.Mutex
-	index     *sync.Map
+	getMutex *sync.Mutex
+	index    map[string]bool
 }
 
 func newIndexOfInitialisms() *indexOfInitialisms {
 	return &indexOfInitialisms{
-		sortMutex: new(sync.Mutex),
-		index:     new(sync.Map),
+		getMutex: new(sync.Mutex),
+		index:    make(map[string]bool, 50),
 	}
 }
 
 func (m *indexOfInitialisms) load(initial map[string]bool) *indexOfInitialisms {
-	m.sortMutex.Lock()
-	defer m.sortMutex.Unlock()
+	m.getMutex.Lock()
+	defer m.getMutex.Unlock()
 	for k, v := range initial {
-		m.index.Store(k, v)
+		m.index[k] = v
 	}
 	return m
 }
 
 func (m *indexOfInitialisms) isInitialism(key string) bool {
-	_, ok := m.index.Load(key)
+	m.getMutex.Lock()
+	defer m.getMutex.Unlock()
+	_, ok := m.index[key]
 	return ok
 }
 
 func (m *indexOfInitialisms) add(key string) *indexOfInitialisms {
-	m.index.Store(key, true)
+	m.getMutex.Lock()
+	defer m.getMutex.Unlock()
+	m.index[key] = true
 	return m
 }
 
 func (m *indexOfInitialisms) sorted() (result []string) {
-	m.sortMutex.Lock()
-	defer m.sortMutex.Unlock()
-	m.index.Range(func(key, value interface{}) bool {
-		k := key.(string)
+	m.getMutex.Lock()
+	defer m.getMutex.Unlock()
+	for k := range m.index {
 		result = append(result, k)
-		return true
-	})
+	}
 	sort.Sort(sort.Reverse(byInitialism(result)))
 	return
 }
