@@ -18,12 +18,14 @@ The Kalp SDK offers a range of key features that simplify application developmen
 
 - **Payment Tracking for Payable Contracts:** The Kalp SDK supports payment tracking for Payable contracts. Developers can easily track payments made for Payable contracts and retrieve payment information using the provided functions. This simplifies the implementation of payment-related functionality within smart contracts, enabling the development of decentralized applications with payment capabilities.
 
+- **Logger functionality:** The Kalp SDK provides a Logger support as well. You can create a Logger object which will give you better visibility of the kalpsdk operations.
+
 ## Installation
 
 To install the Kalp-SDK package, use the following command:
 
 ```go
-go get -u github.com/p2eengineering/kalp-sdk-public
+go get -u github.com/p2eengineering/kalp-sdk-public/kalpsdk
 ```
 
 ## Examples
@@ -63,10 +65,18 @@ To create a new chaincode using the Kalp-SDK and start it, follow these steps:
 Create a new instance of the `kalpsdk.Chaincode` struct. Pass your contract struct as an argument to the `NewChaincode` function and specify whether the contract is payable or not.
 
 ```go
-chaincode, err := kalpsdk.NewChaincode(&MyContract{kalpsdk.Contract{IsPayableContract: true}})
-if err != nil {
-  panic(fmt.Sprintf("Error creating chaincode: %v", err))
-}
+// Creating a sample payable contract object
+	contract := kalpsdk.Contract{IsPayableContract: true}
+
+	// Creating a KalpSDK Logger object
+	contract.Logger = kalpsdk.NewLogger()
+
+	// Create a new instance of your KalpContractChaincode with your smart contract
+  chaincode, err := kalpsdk.NewChaincode(&SmartContract{contract})
+
+	if err != nil {
+		log.Panicf("Error creating KalpContractChaincode: %v", err)
+	}
 ```
 
 #### Start the Chaincode
