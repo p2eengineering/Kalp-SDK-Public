@@ -45,7 +45,7 @@ pipeline {
 			}
 			steps {
 				echo "Deploying into '${PROD_ENV}' environment"
-				sh "aws eks --region ap-south-1 update-kubeconfig --name kalp-prod"
+				sh "aws eks --region ap-south-1 update-kubeconfig --name kalp-myipr-prod"
 				sh "sed -i 's/<VERSION>/${BUILD_NUMBER}/g' deployment-'${PROD_ENV}'.yaml"
 				sh "kubectl apply -f deployment-'${PROD_ENV}'.yaml"
 				echo "'${PROD_ENV}' deployment completed: '${env.BUILD_ID}' on '${env.BUILD_URL}'"
