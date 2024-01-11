@@ -7,7 +7,7 @@ pipeline {
 	environment {
 		PROD_ECR_URL = '408153089286.dkr.ecr.ap-south-1.amazonaws.com/kalp-sdk-backend-prod'
 		PROD_ENV = 'prod'
-		SLACK_CHANNEL = 'pl-kalp-build-alerts'
+		SLACK_CHANNEL = 'pl-kalp-build-alertsss'
     }
 	stages {
 		stage('PROD_BUILD') {
@@ -54,9 +54,7 @@ pipeline {
 		}
 		stage('POST_CHECKS') {
 			when{
-				expression {
-                   	env.BRANCH_NAME == 'main' 
-                }
+				branch 'main'
 			}
 			steps {
 				echo "POST test"
@@ -67,7 +65,6 @@ pipeline {
 				}
 				success {
 					slackSend (	color: 'good', channel: "${SLACK_CHANNEL}", message: "${env.JOB_NAME} | Job has succeeded : #${env.BUILD_NUMBER} in ${currentBuild.durationString.replace(' and counting', '')} \n For more info, please click (<${env.BUILD_URL}|here>)")
-			        echo "Good to deploy into STG"
 				}
 				failure {
 					slackSend (	color: 'danger', channel: "${SLACK_CHANNEL}", message: "${env.JOB_NAME} | @channel - Job has failed #${env.BUILD_NUMBER}\nPlease check full info, (<${env.BUILD_URL}|here>)")
