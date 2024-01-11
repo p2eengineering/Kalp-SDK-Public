@@ -1,4 +1,4 @@
-package main
+package smartcontract
 
 import (
 	//Standard Libs
@@ -17,10 +17,12 @@ const symbolKey = "symbol"
 const statusInProgress = "INPROGRESS"
 const statusCompleted = "COMPLETED"
 
+// Smart Contract Object
 type SmartContract struct {
 	kalpsdk.Contract
 }
 
+// NIU Structure
 type NIU struct {
 	Id          string      `json:"id"`
 	DocType     string      `json:"docType"`
