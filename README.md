@@ -66,17 +66,17 @@ Create a new instance of the `kalpsdk.Chaincode` struct. Pass your contract stru
 
 ```go
 // Creating a sample payable contract object
-	contract := kalpsdk.Contract{IsPayableContract: true}
+contract := kalpsdk.Contract{IsPayableContract: true}
 
-	// Creating a KalpSDK Logger object
-	contract.Logger = kalpsdk.NewLogger()
+// Creating a KalpSDK Logger object
+contract.Logger = kalpsdk.NewLogger()
 
-	// Create a new instance of your KalpContractChaincode with your smart contract
-  chaincode, err := kalpsdk.NewChaincode(&SmartContract{contract})
+// Create a new instance of your KalpContractChaincode with your smart contract
+chaincode, err := kalpsdk.NewChaincode(&SmartContract{contract})
 
-	if err != nil {
-		log.Panicf("Error creating KalpContractChaincode: %v", err)
-	}
+if err != nil {
+  log.Panicf("Error creating KalpContractChaincode: %v", err)
+}
 ```
 
 #### Start the Chaincode
