@@ -72,7 +72,7 @@ contract := kalpsdk.Contract{IsPayableContract: true}
 contract.Logger = kalpsdk.NewLogger()
 
 // Create a new instance of your KalpContractChaincode with your smart contract
-chaincode, err := kalpsdk.NewChaincode(&SmartContract{contract})
+chaincode, err := kalpsdk.NewChaincode(&MyContract{contract})
 
 if err != nil {
   log.Panicf("Error creating KalpContractChaincode: %v", err)
