@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: prod
+  namespace: kalp-prod
   name: kalp-sdk-backend-prod-deployment
   labels:
     app: kalp-sdk-backend-prod
@@ -55,7 +55,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: prod
+  namespace: kalp-prod
   name: kalp-sdk-backend-prod-svc
   labels:
     svc: kalp-sdk-backend-prod
