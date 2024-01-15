@@ -138,6 +138,9 @@ if err != nil {
 
 To read data from the Kalptantra blockchain using the Kalp-SDK, you can use the `GetState` blockchain function. This function allows you to retrieve the value associated with a given key from the ledger.
 
+### GetState
+The GetState is a blockchain function provided by the Kalp-SDK. It allows you to get data from the ledger.
+
 Function Parameters:
 
 - `key` (String): The key for which to retrieve the value from the ledger.
