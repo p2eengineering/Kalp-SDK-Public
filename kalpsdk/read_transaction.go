@@ -243,8 +243,16 @@ func (ctx *TransactionContext) CreateCompositeKey(objectType string, attributes 
 	return ctx.GetStub().CreateCompositeKey(objectType, attributes)
 }
 
-// SplitCompositeKey documentation can be found in interfaces.go
-
+// SplitCompositeKey splits the specified key into attributes on which the
+// composite key was formed. Composite keys found during range queries
+// or partial composite key queries can therefore be split into their
+// composite parts.
+// Parameters:
+//   - compositeKey (string): The composite key which is to be splited.
+// Returns:
+//   - string: The composite key formed by combining the `objectType` and `attributes`.
+//   - []string: list of individual keys after successful split of composite key.	
+//   - error: An error if there was a failure in split the composite key.
 func (ctx *TransactionContext) SplitCompositeKey(compositeKey string) (string, []string, error) {
 	return ctx.GetStub().SplitCompositeKey(compositeKey)
 }
