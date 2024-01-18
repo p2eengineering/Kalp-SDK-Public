@@ -24,6 +24,8 @@ The Kalp SDK offers a range of key features that simplify application developmen
 
 To install the Kalp-SDK package, use the following command:
 
+**NOTE:** We have tested this SDK till **GO 1.19** version, if you are using GO versions above **GO 1.19**, please update go.mod file and change the version to **1.19**
+
 ```go
 go get -u github.com/p2eengineering/kalp-sdk-public/kalpsdk
 ```
