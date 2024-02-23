@@ -4,10 +4,13 @@ import (
 	//Standard Libs
 	"encoding/base64"
 	"fmt"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 
 	//Third party Libs
+	"github.com/joho/godotenv"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -25,8 +28,13 @@ func (ctx *TransactionContext) GetKYC(userId string) (bool, error) {
 	crossCCFunc := "KycExists"
 	crossCCName := "kyc"
 
+	LoadEnv()
+
+	// Get the value of channelName from the environment
+	channelName := os.Getenv("CHANNEL_NAME")
+
 	// Set the channel name for the cross-chaincode invocation.
-	channelName := "universalkyc"
+	//channelName := "universalkyc"
 
 	// Set the parameters for the KycExists function.
 	params := []string{crossCCFunc, userId}
@@ -48,6 +56,13 @@ func (ctx *TransactionContext) GetKYC(userId string) (bool, error) {
 
 	// Convert the response payload to a boolean and return it.
 	return strconv.ParseBool(string(response.Payload))
+}
+
+// fetching details from the env file
+func LoadEnv() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
 }
 
 // GetUserID retrieves the name of the minter from the CA certificate embedded in the client identity.
@@ -249,9 +264,10 @@ func (ctx *TransactionContext) CreateCompositeKey(objectType string, attributes 
 // composite parts.
 // Parameters:
 //   - compositeKey (string): The composite key which is to be splited.
+//
 // Returns:
 //   - string: The composite key formed by combining the `objectType` and `attributes`.
-//   - []string: list of individual keys after successful split of composite key.	
+//   - []string: list of individual keys after successful split of composite key.
 //   - error: An error if there was a failure in split the composite key.
 func (ctx *TransactionContext) SplitCompositeKey(compositeKey string) (string, []string, error) {
 	return ctx.GetStub().SplitCompositeKey(compositeKey)
