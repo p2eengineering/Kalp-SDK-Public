@@ -4,14 +4,12 @@ import (
 	//Standard Libs
 	"encoding/base64"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
 	//Third party Libs
 
 	"github.com/hyperledger/fabric-chaincode-go/shim"
-	"github.com/joho/godotenv"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -36,10 +34,6 @@ func (ctx *TransactionContext) GetKYC(userId string) (bool, error) {
 	crossCCFunc := "KycExists"
 	crossCCName := "kyc"
 
-	// LoadEnv()
-
-	// // Get the value of channelName from the environment
-	// channelName := os.Getenv("CHANNEL_NAME")
 	// Call the GetChannelName function to obtain the channel name.
 	channelName, err := GetChannelName(ctx.GetStub())
 	if err != nil {
@@ -69,13 +63,6 @@ func (ctx *TransactionContext) GetKYC(userId string) (bool, error) {
 
 	// Convert the response payload to a boolean and return it.
 	return strconv.ParseBool(string(response.Payload))
-}
-
-// fetching details from the env file
-func LoadEnv() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
-	}
 }
 
 // GetUserID retrieves the name of the minter from the CA certificate embedded in the client identity.
