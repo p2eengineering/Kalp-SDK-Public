@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	//Third party Libs
+
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -20,13 +21,35 @@ import (
 // Returns:
 //   - bool: A boolean value indicating whether the user has completed KYC.
 //   - error: An error if the operation fails.
+// func GetChannelName(stub shim.ChaincodeStubInterface) (string, error) {
+// 	channelID := stub.GetChannelID()
+// 	//return shim.Success([]byte(channelID))
+
+// 	return channelID, fmt.Errorf("failed to get channelName")
+// }
+
+func (ctx *TransactionContext) GetChannelName() (string, error) {
+	channelID := ctx.GetStub().GetChannelID()
+	if channelID == "" {
+		fmt.Errorf("failed to get channelName: %v", channelID)
+	}
+
+	return channelID, nil
+}
+
 func (ctx *TransactionContext) GetKYC(userId string) (bool, error) {
 	// Set the function name and chaincode name for the cross-chaincode invocation.
 	crossCCFunc := "KycExists"
 	crossCCName := "kyc"
 
+	// Call the GetChannelName function to obtain the channel name.
+	channelName, err := ctx.GetChannelName()
+	if err != nil {
+		return false, fmt.Errorf("failed to get channel name: %s", err.Error())
+	}
+
 	// Set the channel name for the cross-chaincode invocation.
-	channelName := "universalkyc"
+	//channelName := "universalkyc"
 
 	// Set the parameters for the KycExists function.
 	params := []string{crossCCFunc, userId}
@@ -249,9 +272,10 @@ func (ctx *TransactionContext) CreateCompositeKey(objectType string, attributes 
 // composite parts.
 // Parameters:
 //   - compositeKey (string): The composite key which is to be splited.
+//
 // Returns:
 //   - string: The composite key formed by combining the `objectType` and `attributes`.
-//   - []string: list of individual keys after successful split of composite key.	
+//   - []string: list of individual keys after successful split of composite key.
 //   - error: An error if there was a failure in split the composite key.
 func (ctx *TransactionContext) SplitCompositeKey(compositeKey string) (string, []string, error) {
 	return ctx.GetStub().SplitCompositeKey(compositeKey)
