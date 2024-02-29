@@ -21,17 +21,10 @@ import (
 // Returns:
 //   - bool: A boolean value indicating whether the user has completed KYC.
 //   - error: An error if the operation fails.
-// func GetChannelName(stub shim.ChaincodeStubInterface) (string, error) {
-// 	channelID := stub.GetChannelID()
-// 	//return shim.Success([]byte(channelID))
-
-// 	return channelID, fmt.Errorf("failed to get channelName")
-// }
-
 func (ctx *TransactionContext) GetChannelName() (string, error) {
 	channelID := ctx.GetStub().GetChannelID()
 	if channelID == "" {
-		fmt.Errorf("failed to get channelName: %v", channelID)
+		return "", fmt.Errorf("failed to get channelName: %v", channelID)
 	}
 
 	return channelID, nil
