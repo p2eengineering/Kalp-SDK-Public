@@ -8,9 +8,22 @@ import (
 	"strings"
 
 	//Third party Libs
-
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+// GetChannelName retrieves the name of the channel associated with the transaction context.
+// It returns the channel name as a string and an error if the channel ID is empty or retrieval fails.
+func (ctx *TransactionContext) GetChannelName() (string, error) {
+	// Get the channel ID using the transaction context's stub.
+	channelID := ctx.GetStub().GetChannelID()
+	// Check if the channel ID is empty.
+	if channelID == "" {
+		// If the channel ID is empty, return an error indicating the failure to retrieve the channel name.
+		return "", fmt.Errorf("failed to get channelName: %v", channelID)
+	}
+	// If the channel ID is not empty, return it as the channel name along with no errors.
+	return channelID, nil
+}
 
 // GetKYC checks if a user has completed KYC on our network by invoking the KycExists function
 // on the kyc chaincode for the given user ID in the universalkyc channel.
@@ -21,15 +34,6 @@ import (
 // Returns:
 //   - bool: A boolean value indicating whether the user has completed KYC.
 //   - error: An error if the operation fails.
-func (ctx *TransactionContext) GetChannelName() (string, error) {
-	channelID := ctx.GetStub().GetChannelID()
-	if channelID == "" {
-		return "", fmt.Errorf("failed to get channelName: %v", channelID)
-	}
-
-	return channelID, nil
-}
-
 func (ctx *TransactionContext) GetKYC(userId string) (bool, error) {
 	// Set the function name and chaincode name for the cross-chaincode invocation.
 	crossCCFunc := "KycExists"
@@ -41,9 +45,6 @@ func (ctx *TransactionContext) GetKYC(userId string) (bool, error) {
 		return false, fmt.Errorf("failed to get channel name: %s", err.Error())
 	}
 
-	// Set the channel name for the cross-chaincode invocation.
-	//channelName := "universalkyc"
-
 	// Set the parameters for the KycExists function.
 	params := []string{crossCCFunc, userId}
 
@@ -53,7 +54,7 @@ func (ctx *TransactionContext) GetKYC(userId string) (bool, error) {
 		queryArgs[i] = []byte(arg)
 	}
 
-	// Invoke the KycExists function on the kyc chaincode in the universalkyc channel.
+	// Invoke the KycExists function on the kyc chaincode in the channel.
 	response := ctx.GetStub().InvokeChaincode(crossCCName, queryArgs, channelName)
 
 	// Check if the response status is not 200 OK.
