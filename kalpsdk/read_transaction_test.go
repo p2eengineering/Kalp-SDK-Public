@@ -14,8 +14,100 @@ import (
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-protos-go/ledger/queryresult"
 	"github.com/hyperledger/fabric-protos-go/peer"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
+
+type mockHistoryIterator struct {
+	mock.Mock
+}
+
+func (m *mockHistoryIterator) HasNext() bool {
+	args := m.Called()
+	return args.Bool(0)
+}
+
+func (m *mockHistoryIterator) Next() (*ChaincodeResponse, error) {
+	args := m.Called()
+	return args.Get(0).(*ChaincodeResponse), args.Error(1)
+}
+
+type ChaincodeResponse struct {
+	TxId      string
+	Value     []byte
+	Timestamp *timestampProto
+	IsDelete  bool
+}
+
+type timestampProto struct {
+	Seconds int64
+	Nanos   int32
+}
+
+func TestIsSmartContractOwner(t *testing.T) {
+	mockClientIdentity := new(mocks.ClientIdentity)
+	mockStub := new(mocks.ChaincodeStubInterface)
+	ctx := &TransactionContext{
+		clientIdentity: mockClientIdentity,
+		stub:           mockStub,
+	}
+
+	expectedId := "eDUwOTo6Q049VGVzdE93bmVyLDEyMw=="
+	t.Run("Check for success response", func(t *testing.T) {
+		mockStub.On("GetState", "smartContractOwner").Return([]byte("TestOwner"), nil).Once()
+		// Set up the expected behavior of the mock stub
+		mockClientIdentity.On("GetID").Return(expectedId, nil).Once()
+
+		isOwner, err := ctx.IsSmartContractOwner()
+		if !isOwner || err != nil {
+			t.Errorf("unexpected result: isOwner=%t, err=%v", isOwner, err)
+		}
+		require.NoError(t, err)
+	})
+
+	t.Run("check for false response", func(t *testing.T) {
+		mockStub.On("GetState", "smartContractOwner").Return([]byte("TestOwnerFake"), nil).Once()
+		// Set up the expected behavior of the mock stub
+		mockClientIdentity.On("GetID").Return(expectedId, nil).Once()
+
+		isOwner, err := ctx.IsSmartContractOwner()
+		if err != nil {
+			t.Errorf("unexpected result: isOwner=%t, err=%v", isOwner, err)
+		}
+		require.NoError(t, err)
+	})
+}
+
+func TestFetchOwnerHistory(t *testing.T) {
+	mockClientIdentity := new(mocks.ClientIdentity)
+	mockHisQuery := new(mocks.HistoryQueryIteratorInterface)
+	mockStub := new(mocks.ChaincodeStubInterface)
+	ctx := &TransactionContext{
+		clientIdentity: mockClientIdentity,
+		stub:           mockStub,
+	}
+
+	expectedResult := &queryresult.KeyModification{
+		TxId:  "txid",
+		Value: []byte("historyforkey"),
+	}
+
+	t.Run("Check for success response", func(t *testing.T) {
+		mockStub.On("GetHistoryForKey", "key").Return(mockHisQuery, nil).Once()
+		mockHisQuery.On("Next").Return(expectedResult, nil)
+		mockHisQuery.On("HasNext").Return(false)
+
+		hisQuery, err := ctx.GetHistoryForKey("key")
+		require.NoError(t, err)
+
+		km, err := hisQuery.Next()
+		require.NoError(t, err)
+
+		// require that no error occurred
+		require.Equal(t, expectedResult, km)
+		require.False(t, hisQuery.HasNext())
+	})
+}
 
 func TestSetEvent(t *testing.T) {
 	tx := &TransactionContext{

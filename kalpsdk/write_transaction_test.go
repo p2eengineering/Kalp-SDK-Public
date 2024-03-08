@@ -14,6 +14,49 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestInitialize(t *testing.T) {
+	mockClientIdentity := new(mocks.ClientIdentity)
+	mockStub := new(mocks.ChaincodeStubInterface)
+	ctx := &TransactionContext{
+		clientIdentity: mockClientIdentity,
+		stub:           mockStub,
+	}
+
+	expectedId := "eDUwOTo6Q049VGVzdE93bmVyLDEyMw=="
+	t.Run("Check for success response", func(t *testing.T) {
+		mockStub.On("GetState", "smartContractOwner").Return([]byte(""), nil).Once()
+		// Set up the expected behavior of the mock stub
+		mockClientIdentity.On("GetID").Return(expectedId, nil).Once()
+
+		mockStub.On("PutState", "smartContractOwner", []byte("TestOwner")).Return(nil).Once()
+
+		err := ctx.Initialize()
+		require.NoError(t, err)
+	})
+}
+
+func TestTransferOwner(t *testing.T) {
+	mockClientIdentity := new(mocks.ClientIdentity)
+	mockStub := new(mocks.ChaincodeStubInterface)
+	ctx := &TransactionContext{
+		clientIdentity: mockClientIdentity,
+		stub:           mockStub,
+	}
+
+	expectedId := "eDUwOTo6Q049VGVzdE93bmVyLDEyMw=="
+	t.Run("Check for success response", func(t *testing.T) {
+		mockClientIdentity.On("GetID").Return(expectedId, nil).Once()
+		
+		expectedResponse := peer.Response{Status: shim.OK, Payload: []byte("true")}
+		mockStub.On("InvokeChaincode", "kyc", [][]byte{[]byte("KycExists"), []byte("TestOwner")}, "universalkyc").Return(expectedResponse).Once()
+
+		mockStub.On("PutState", "smartContractOwner", []byte("TestOwner")).Return(nil).Once()
+
+		err := ctx.TransferOwner()
+		require.NoError(t, err)
+	})
+}
+
 func TestPutStateWithoutKYC(t *testing.T) {
 	mockStub := new(mocks.ChaincodeStubInterface)
 	tx := &TransactionContext{

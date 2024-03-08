@@ -6,10 +6,68 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	//Third party Libs
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+// IsSmartContractOwner checks if the caller is the owner of the smart contract
+// by comparing the userID of the caller with the stored smart contract owner ID.
+//
+// Returns:
+//   - bool: A boolean value indicating whether the caller is the owner of the smart contract.
+//   - error: An error if the operation fails.
+func (ctx *TransactionContext) IsSmartContractOwner() (bool, error) {
+	userID, err := ctx.GetUserID()
+	if err != nil {
+		return false, err
+	}
+
+	ownerId, err := ctx.GetStub().GetState("smartContractOwner")
+	if err != nil {
+		return false, err
+	}
+
+	return string(ownerId) == userID, nil
+}
+
+// FetchOwnerHistory retrieves the transaction history of the smart contract owner.
+//
+// Returns:
+//   - []HistoryQueryResult: A slice containing the transaction history of the smart contract owner.
+//   - error: An error if the operation fails.
+func (ctx *TransactionContext) FetchOwnerHistory() ([]HistoryQueryResult, error) {
+	resultsIterator, err := ctx.GetStub().GetHistoryForKey("smartContractOwner")
+	if err != nil {
+		return nil, err
+	}
+
+	defer resultsIterator.Close()
+
+	var records []HistoryQueryResult
+	for resultsIterator.HasNext() {
+		response, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		asset := string(response.Value)
+
+		timestampProto := response.Timestamp
+		timestamp := time.Unix(timestampProto.GetSeconds(), int64(timestampProto.GetNanos())).UTC()
+
+		record := HistoryQueryResult{
+			TxId:      response.TxId,
+			Timestamp: timestamp,
+			Record:    asset,
+			IsDelete:  response.IsDelete,
+		}
+		records = append(records, record)
+	}
+
+	return records, nil
+}
 
 // GetKYC checks if a user has completed KYC on our network by invoking the KycExists function
 // on the kyc chaincode for the given user ID in the universalkyc channel.
@@ -249,9 +307,10 @@ func (ctx *TransactionContext) CreateCompositeKey(objectType string, attributes 
 // composite parts.
 // Parameters:
 //   - compositeKey (string): The composite key which is to be splited.
+//
 // Returns:
 //   - string: The composite key formed by combining the `objectType` and `attributes`.
-//   - []string: list of individual keys after successful split of composite key.	
+//   - []string: list of individual keys after successful split of composite key.
 //   - error: An error if there was a failure in split the composite key.
 func (ctx *TransactionContext) SplitCompositeKey(compositeKey string) (string, []string, error) {
 	return ctx.GetStub().SplitCompositeKey(compositeKey)

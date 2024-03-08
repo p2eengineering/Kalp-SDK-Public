@@ -8,6 +8,64 @@ import (
 	res "github.com/p2eengineering/kalp-sdk-public/response"
 )
 
+// Initialize initializes the smart contract owner by setting the owner ID.
+// It checks if there's already an owner, and if not, it sets the caller's userID as the owner ID.
+//
+// Returns:
+//   - error: An error if the operation fails.
+func (ctx *TransactionContext) Initialize() error {
+	ownerId, err := ctx.GetStub().GetState("smartContractOwner")
+	if err != nil {
+		return err
+	}
+
+	if string(ownerId) != "" {
+		return fmt.Errorf("already an owner exists")
+	}
+
+	userId, err := ctx.GetUserID()
+	if err != nil {
+		return err
+	}
+
+	err = ctx.GetStub().PutState("smartContractOwner", []byte(userId))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TransferOwner transfers ownership of the smart contract to the caller.
+// It verifies KYC completion for the new owner before transferring ownership.
+//
+// Returns:
+//   - error: An error if the operation fails.
+func (ctx *TransactionContext) TransferOwner() error {
+	userID, err := ctx.GetUserID()
+	if err != nil {
+		return err
+	}
+
+	// check Kyc for new owner userId
+	kycCheck, err := ctx.GetKYC(userID)
+	if err != nil {
+		return fmt.Errorf("failed to perform KYC check for user %s. Error: %v", userID, err)
+	}
+
+	// Return an error if the user has not completed KYC.
+	if !kycCheck {
+		return fmt.Errorf("user %s has not completed KYC", userID)
+	}
+
+	err = ctx.GetStub().PutState("smartContractOwner", []byte(userID))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // PutStateWithKYC puts the specified `key` and `value` into the transaction's
 // writeset as a data-write proposal, only if the user has completed KYC.
 // If the user has not completed KYC, an error is returned.
