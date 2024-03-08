@@ -11,6 +11,20 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// GetChannelName retrieves the name of the channel associated with the transaction context.
+// It returns the channel name as a string and an error if the channel ID is empty or retrieval fails.
+func (ctx *TransactionContext) GetChannelName() (string, error) {
+	// Get the channel ID using the transaction context's stub.
+	channelID := ctx.GetStub().GetChannelID()
+	// Check if the channel ID is empty.
+	if channelID == "" {
+		// If the channel ID is empty, return an error indicating the failure to retrieve the channel name.
+		return "", fmt.Errorf("failed to get channelName: %v", channelID)
+	}
+	// If the channel ID is not empty, return it as the channel name along with no errors.
+	return channelID, nil
+}
+
 // GetKYC checks if a user has completed KYC on our network by invoking the KycExists function
 // on the kyc chaincode for the given user ID in the universalkyc channel.
 //
@@ -25,8 +39,11 @@ func (ctx *TransactionContext) GetKYC(userId string) (bool, error) {
 	crossCCFunc := "KycExists"
 	crossCCName := "kyc"
 
-	// Set the channel name for the cross-chaincode invocation.
-	channelName := "universalkyc"
+	// Call the GetChannelName function to obtain the channel name.
+	channelName, err := ctx.GetChannelName()
+	if err != nil {
+		return false, fmt.Errorf("failed to get channel name: %s", err.Error())
+	}
 
 	// Set the parameters for the KycExists function.
 	params := []string{crossCCFunc, userId}
@@ -37,7 +54,7 @@ func (ctx *TransactionContext) GetKYC(userId string) (bool, error) {
 		queryArgs[i] = []byte(arg)
 	}
 
-	// Invoke the KycExists function on the kyc chaincode in the universalkyc channel.
+	// Invoke the KycExists function on the kyc chaincode in the channel.
 	response := ctx.GetStub().InvokeChaincode(crossCCName, queryArgs, channelName)
 
 	// Check if the response status is not 200 OK.
@@ -249,9 +266,10 @@ func (ctx *TransactionContext) CreateCompositeKey(objectType string, attributes 
 // composite parts.
 // Parameters:
 //   - compositeKey (string): The composite key which is to be splited.
+//
 // Returns:
 //   - string: The composite key formed by combining the `objectType` and `attributes`.
-//   - []string: list of individual keys after successful split of composite key.	
+//   - []string: list of individual keys after successful split of composite key.
 //   - error: An error if there was a failure in split the composite key.
 func (ctx *TransactionContext) SplitCompositeKey(compositeKey string) (string, []string, error) {
 	return ctx.GetStub().SplitCompositeKey(compositeKey)
