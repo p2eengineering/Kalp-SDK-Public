@@ -20,7 +20,7 @@ func (ctx *TransactionContext) Initialize() error {
 	}
 
 	if string(ownerId) != "" {
-		return fmt.Errorf("already an owner exists")
+		return nil
 	}
 
 	userId, err := ctx.GetUserID()
@@ -41,24 +41,27 @@ func (ctx *TransactionContext) Initialize() error {
 //
 // Returns:
 //   - error: An error if the operation fails.
-func (ctx *TransactionContext) TransferOwner() error {
-	userID, err := ctx.GetUserID()
+func (ctx *TransactionContext) TransferOwner(newUserId string) error {
+	isOwner, err := ctx.IsSmartContractOwner()
 	if err != nil {
 		return err
 	}
+	if !isOwner {
+		return fmt.Errorf("signer is not an owner")
+	}
 
 	// check Kyc for new owner userId
-	kycCheck, err := ctx.GetKYC(userID)
+	kycCheck, err := ctx.GetKYC(newUserId)
 	if err != nil {
-		return fmt.Errorf("failed to perform KYC check for user %s. Error: %v", userID, err)
+		return fmt.Errorf("failed to perform KYC check for user %s. Error: %v", newUserId, err)
 	}
 
 	// Return an error if the user has not completed KYC.
 	if !kycCheck {
-		return fmt.Errorf("user %s has not completed KYC", userID)
+		return fmt.Errorf("user %s has not completed KYC", newUserId)
 	}
 
-	err = ctx.GetStub().PutState("smartContractOwner", []byte(userID))
+	err = ctx.GetStub().PutState("smartContractOwner", []byte(newUserId))
 	if err != nil {
 		return err
 	}

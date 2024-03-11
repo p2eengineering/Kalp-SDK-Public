@@ -45,14 +45,18 @@ func TestTransferOwner(t *testing.T) {
 
 	expectedId := "eDUwOTo6Q049VGVzdE93bmVyLDEyMw=="
 	t.Run("Check for success response", func(t *testing.T) {
+		mockStub.On("GetState", "smartContractOwner").Return([]byte("TestOwner"), nil).Once()
+		// Set up the expected behavior of the mock stub
 		mockClientIdentity.On("GetID").Return(expectedId, nil).Once()
 		
+		mockStub.On("GetChannelID").Return("universalkyc", nil).Once()
+
 		expectedResponse := peer.Response{Status: shim.OK, Payload: []byte("true")}
 		mockStub.On("InvokeChaincode", "kyc", [][]byte{[]byte("KycExists"), []byte("TestOwner")}, "universalkyc").Return(expectedResponse).Once()
 
 		mockStub.On("PutState", "smartContractOwner", []byte("TestOwner")).Return(nil).Once()
 
-		err := ctx.TransferOwner()
+		err := ctx.TransferOwner("TestOwner")
 		require.NoError(t, err)
 	})
 }
