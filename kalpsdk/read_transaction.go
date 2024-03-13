@@ -38,6 +38,14 @@ func (ctx *TransactionContext) IsSmartContractOwner() (bool, error) {
 //   - []HistoryQueryResult: A slice containing the transaction history of the smart contract owner.
 //   - error: An error if the operation fails.
 func (ctx *TransactionContext) FetchOwnerHistory() ([]HistoryQueryResult, error) {
+	isOwner, err := ctx.IsSmartContractOwner()
+	if err != nil {
+		return nil, err
+	}
+	if !isOwner {
+		return nil, fmt.Errorf("signer is not an owner")
+	}
+
 	resultsIterator, err := ctx.GetStub().GetHistoryForKey("smartContractOwner")
 	if err != nil {
 		return nil, err
