@@ -4,6 +4,7 @@ import (
 	//Standard Libs
 	"encoding/base64"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -21,15 +22,19 @@ import (
 func (ctx *TransactionContext) IsSmartContractOwner() (bool, error) {
 	userID, err := ctx.GetUserID()
 	if err != nil {
+		log.Println("Error retrieving user ID:", err)
 		return false, err
 	}
 
-	ownerId, err := ctx.GetStub().GetState("smartContractOwner")
+	ownerId, err := ctx.GetStub().GetState(smartContractOwner)
 	if err != nil {
+		log.Println("Error retrieving owner ID from state:", err)
 		return false, err
 	}
 
-	return string(ownerId) == userID, nil
+	isOwner := string(ownerId) == userID
+	log.Printf("Is user (%s) the owner: %t", userID, isOwner)
+	return isOwner, nil
 }
 
 // FetchOwnerHistory retrieves the transaction history of the smart contract owner.
@@ -39,14 +44,15 @@ func (ctx *TransactionContext) IsSmartContractOwner() (bool, error) {
 //   - error: An error if the operation fails.
 func (ctx *TransactionContext) FetchOwnerHistory() ([]HistoryQueryResult, error) {
 	isOwner, err := ctx.IsSmartContractOwner()
-	if err != nil {
-		return nil, err
-	}
-	if !isOwner {
-		return nil, fmt.Errorf("signer is not an owner")
+	if err != nil || !isOwner {
+		if err != nil {
+			return nil, err
+		} else {
+			return nil, fmt.Errorf("signer is not an owner")
+		}
 	}
 
-	resultsIterator, err := ctx.GetStub().GetHistoryForKey("smartContractOwner")
+	resultsIterator, err := ctx.GetStub().GetHistoryForKey(smartContractOwner)
 	if err != nil {
 		return nil, err
 	}

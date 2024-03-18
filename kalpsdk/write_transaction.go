@@ -3,10 +3,13 @@ package kalpsdk
 import (
 	//Standard Libs
 	"fmt"
+	"log"
 
 	//Custom Build Libs
 	res "github.com/p2eengineering/kalp-sdk-public/response"
 )
+
+const smartContractOwner = "smartContractOwner"
 
 // Initialize initializes the smart contract owner by setting the owner ID.
 // It checks if there's already an owner, and if not, it sets the caller's userID as the owner ID.
@@ -14,58 +17,51 @@ import (
 // Returns:
 //   - error: An error if the operation fails.
 func (ctx *TransactionContext) Initialize() error {
-	ownerId, err := ctx.GetStub().GetState("smartContractOwner")
-	if err != nil {
+	ownerId, err := ctx.GetStub().GetState(smartContractOwner)
+	if string(ownerId) != "" || err != nil {
+		log.Println("Error retrieving owner ID from state / Owner already exists:", err)
 		return err
-	}
-
-	if string(ownerId) != "" {
-		return nil
 	}
 
 	userId, err := ctx.GetUserID()
 	if err != nil {
+		log.Println("Error retrieving user ID:", err)
 		return err
 	}
 
-	err = ctx.GetStub().PutState("smartContractOwner", []byte(userId))
+	err = ctx.PutStateWithoutKYC(smartContractOwner, []byte(userId))
 	if err != nil {
+		log.Println("Error setting owner ID in state:", err)
 		return err
 	}
 
+	log.Println("Owner ID initialized successfully with user ID:", userId)
 	return nil
 }
 
-// TransferOwner transfers ownership of the smart contract to the caller.
-// It verifies KYC completion for the new owner before transferring ownership.
+// TransferOwner transfers ownership of the smart contract to the new owner.
 //
 // Returns:
 //   - error: An error if the operation fails.
 func (ctx *TransactionContext) TransferOwner(newUserId string) error {
 	isOwner, err := ctx.IsSmartContractOwner()
-	if err != nil {
-		return err
-	}
-	if !isOwner {
-		return fmt.Errorf("signer is not an owner")
-	}
-
-	// check Kyc for new owner userId
-	kycCheck, err := ctx.GetKYC(newUserId)
-	if err != nil {
-		return fmt.Errorf("failed to perform KYC check for user %s. Error: %v", newUserId, err)
+	if err != nil || !isOwner {
+		if err != nil {
+			log.Println("Error checking if signer is owner:", err)
+			return err
+		} else {
+			log.Println("Signer is not an owner")
+			return fmt.Errorf("signer is not an owner")
+		}
 	}
 
-	// Return an error if the user has not completed KYC.
-	if !kycCheck {
-		return fmt.Errorf("user %s has not completed KYC", newUserId)
-	}
-
-	err = ctx.GetStub().PutState("smartContractOwner", []byte(newUserId))
+	err = ctx.PutStateWithoutKYC(smartContractOwner, []byte(newUserId))
 	if err != nil {
+		log.Println("Error setting owner ID in state:", err)
 		return err
 	}
 
+	log.Println("Owner transferred successfully to user ID:", newUserId)
 	return nil
 }
 

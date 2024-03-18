@@ -54,7 +54,7 @@ func TestIsSmartContractOwner(t *testing.T) {
 
 	expectedId := "eDUwOTo6Q049VGVzdE93bmVyLDEyMw=="
 	t.Run("Check for success response", func(t *testing.T) {
-		mockStub.On("GetState", "smartContractOwner").Return([]byte("TestOwner"), nil).Once()
+		mockStub.On("GetState", smartContractOwner).Return([]byte("TestOwner"), nil).Once()
 		// Set up the expected behavior of the mock stub
 		mockClientIdentity.On("GetID").Return(expectedId, nil).Once()
 
@@ -66,7 +66,7 @@ func TestIsSmartContractOwner(t *testing.T) {
 	})
 
 	t.Run("check for false response", func(t *testing.T) {
-		mockStub.On("GetState", "smartContractOwner").Return([]byte("TestOwnerFake"), nil).Once()
+		mockStub.On("GetState", smartContractOwner).Return([]byte("TestOwnerFake"), nil).Once()
 		// Set up the expected behavior of the mock stub
 		mockClientIdentity.On("GetID").Return(expectedId, nil).Once()
 

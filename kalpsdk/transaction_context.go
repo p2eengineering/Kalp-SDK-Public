@@ -28,8 +28,7 @@ type TransactionContextInterface interface {
 	// by comparing the userID of the caller with the stored smart contract owner ID.
 	IsSmartContractOwner() (bool, error)
 
-	// TransferOwner transfers ownership of the smart contract to the caller.
-	// It verifies KYC completion for the new owner before transferring ownership.
+	// TransferOwner transfers ownership of the smart contract to the new owner.
 	TransferOwner(newUserId string) error
 
 	// FetchOwnerHistory retrieves the transaction history of the smart contract owner.
