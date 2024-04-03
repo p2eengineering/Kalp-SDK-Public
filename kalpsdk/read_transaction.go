@@ -26,7 +26,7 @@ func (ctx *TransactionContext) IsSmartContractOwner() (bool, error) {
 		return false, err
 	}
 
-	ownerId, err := ctx.GetStub().GetState(smartContractOwner)
+	ownerId, err := ctx.GetState(smartContractOwner)
 	if err != nil {
 		log.Println("Error retrieving owner ID from state:", err)
 		return false, err

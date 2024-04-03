@@ -17,7 +17,7 @@ const smartContractOwner = "smartContractOwner"
 // Returns:
 //   - error: An error if the operation fails.
 func (ctx *TransactionContext) Initialize() error {
-	ownerId, err := ctx.GetStub().GetState(smartContractOwner)
+	ownerId, err := ctx.GetState(smartContractOwner)
 	if string(ownerId) != "" || err != nil {
 		log.Println("Error retrieving owner ID from state / Owner already exists:", err)
 		return err
