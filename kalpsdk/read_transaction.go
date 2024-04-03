@@ -52,7 +52,7 @@ func (ctx *TransactionContext) FetchOwnerHistory() ([]HistoryQueryResult, error)
 		}
 	}
 
-	resultsIterator, err := ctx.GetStub().GetHistoryForKey(smartContractOwner)
+	resultsIterator, err := ctx.GetHistoryForKey(smartContractOwner)
 	if err != nil {
 		return nil, err
 	}
