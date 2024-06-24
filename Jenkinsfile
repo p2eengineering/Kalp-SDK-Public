@@ -7,7 +7,7 @@ pipeline {
 	environment {
 		PROD_ECR_URL = '408153089286.dkr.ecr.ap-south-1.amazonaws.com/kalp-sdk-backend-prod'
 		PROD_ENV = 'prod'
-		SLACK_CHANNEL = 'pl-kalp-build-alertsss'
+		SLACK_CHANNEL = 'pl-kalp-build-alerts'
     }
 	stages {
 		stage('PROD_BUILD') {
