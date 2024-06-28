@@ -3,10 +3,67 @@ package kalpsdk
 import (
 	//Standard Libs
 	"fmt"
+	"log"
 
 	//Custom Build Libs
 	res "github.com/p2eengineering/kalp-sdk-public/response"
 )
+
+const smartContractOwner = "smartContractOwner"
+
+// Initialize initializes the smart contract owner by setting the owner ID.
+// It checks if there's already an owner, and if not, it sets the caller's userID as the owner ID.
+//
+// Returns:
+//   - error: An error if the operation fails.
+func (ctx *TransactionContext) Initialize() error {
+	ownerId, err := ctx.GetState(smartContractOwner)
+	if string(ownerId) != "" || err != nil {
+		log.Println("Error retrieving owner ID from state / Owner already exists:", err)
+		return err
+	}
+
+	userId, err := ctx.GetUserID()
+	if err != nil {
+		log.Println("Error retrieving user ID:", err)
+		return err
+	}
+
+	err = ctx.PutStateWithoutKYC(smartContractOwner, []byte(userId))
+	if err != nil {
+		log.Println("Error setting owner ID in state:", err)
+		return err
+	}
+
+	log.Println("Owner ID initialized successfully with user ID:", userId)
+	return nil
+}
+
+// TransferOwner transfers ownership of the smart contract to the new owner.
+//
+// Returns:
+//   - error: An error if the operation fails.
+func (ctx *TransactionContext) TransferOwner(newUserId string) error {
+	isOwner, err := ctx.IsSmartContractOwner()
+	if err != nil || !isOwner {
+		if err != nil {
+			log.Println("Error checking if signer is owner:", err)
+			return err
+		} else {
+			log.Println("Signer is not an owner")
+			return fmt.Errorf("signer is not an owner")
+		}
+	}
+
+	err = ctx.PutStateWithoutKYC(smartContractOwner, []byte(newUserId))
+	if err != nil {
+		log.Println("Error setting owner ID in state:", err)
+		return err
+	}
+
+	log.Println("Owner transferred successfully to user ID:", newUserId)
+	return nil
+}
 
 // PutStateWithKYC puts the specified `key` and `value` into the transaction's
 // writeset as a data-write proposal, only if the user has completed KYC.
