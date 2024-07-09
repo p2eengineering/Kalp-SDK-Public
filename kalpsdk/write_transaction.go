@@ -114,8 +114,12 @@ func (ctx *TransactionContext) PutKYC(id string, kycId string, kycHash string) e
 		invokeArgs[i] = []byte(arg)
 	}
 
-	// Invoke the "kyc" chaincode with the specified parameters using the "universalkyc" chaincode name
-	response := ctx.GetStub().InvokeChaincode("kyc", invokeArgs, "universalkyc")
+	channelName, err := ctx.GetChannelName()
+	if err != nil {
+		return fmt.Errorf("failed to get channel name: %s", err.Error())
+	}
+	// Invoke the "kyc" chaincode with the specified parameters using the kyc chaincode name
+	response := ctx.GetStub().InvokeChaincode("kyc", invokeArgs, channelName)
 
 	// Check the response status and return an error if it is not 200 (OK)
 	if response.Status != 200 {
