@@ -196,6 +196,9 @@ type TransactionContextInterface interface {
 
 	// ClientIdentity represents information about the identity that submitted the transaction
 	GetClientIdentity() cid.ClientIdentity
+
+	// GetStub returns the current set stub
+	GetStub() shim.ChaincodeStubInterface
 }
 
 // TransactionContext is a basic transaction context to be used in contracts,
