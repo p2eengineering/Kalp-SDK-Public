@@ -8,6 +8,9 @@ import (
 	"github.com/hyperledger/fabric-chaincode-go/pkg/cid"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	//Third party Libs
+	pb "github.com/hyperledger/fabric-protos-go/peer"
 )
 
 type TransactionContextInterface interface {
@@ -198,7 +201,7 @@ type TransactionContextInterface interface {
 	GetClientIdentity() cid.ClientIdentity
 
 	// GetStub returns the current set stub
-	GetStub() shim.ChaincodeStubInterface
+	GetSignedProposal() (*pb.SignedProposal, error)
 }
 
 // TransactionContext is a basic transaction context to be used in contracts,
@@ -224,6 +227,10 @@ func (ctx *TransactionContext) SetClientIdentity(ci cid.ClientIdentity) {
 // GetStub returns the current set stub
 func (ctx *TransactionContext) GetStub() shim.ChaincodeStubInterface {
 	return ctx.stub
+}
+
+func (ctx *TransactionContext) GetSignedProposal() (*pb.SignedProposal, error) {
+	return ctx.GetStub().GetSignedProposal()
 }
 
 // GetClientIdentity returns the current set client identity
