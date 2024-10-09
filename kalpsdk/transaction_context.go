@@ -200,7 +200,7 @@ type TransactionContextInterface interface {
 	// ClientIdentity represents information about the identity that submitted the transaction
 	GetClientIdentity() cid.ClientIdentity
 
-	// GetStub returns the current set stub
+	// GetSignedProposal returns the signed proposal
 	GetSignedProposal() (*pb.SignedProposal, error)
 }
 
