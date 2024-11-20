@@ -2,6 +2,8 @@ package kalpsdk
 
 import (
 	//Custom Build Libs
+	"time"
+
 	res "github.com/p2eengineering/kalp-sdk-public/response"
 
 	//Third party Libs
@@ -13,7 +15,28 @@ import (
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 )
 
+type HistoryQueryResult struct {
+	TxId      string
+	Timestamp time.Time
+	Record    string
+	IsDelete  bool
+}
+
 type TransactionContextInterface interface {
+	// Initialize initializes the smart contract owner by setting the owner ID.
+	// It checks if there's already an owner, and if not, it sets the caller's userID as the owner ID.
+	Initialize() error
+
+	// IsSmartContractOwner checks if the caller is the owner of the smart contract
+	// by comparing the userID of the caller with the stored smart contract owner ID.
+	IsSmartContractOwner() (bool, error)
+
+	// TransferOwner transfers ownership of the smart contract to the new owner.
+	TransferOwner(newUserId string) error
+
+	// FetchOwnerHistory retrieves the transaction history of the smart contract owner.
+	FetchOwnerHistory() ([]HistoryQueryResult, error)
+
 	// PutStateWithKYC puts the specified `key` and `value` into the transaction's
 	// writeset as a data-write proposal, only if the user has completed KYC.
 	// If the user has not completed KYC, an error is returned.
