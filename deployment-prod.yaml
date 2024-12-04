@@ -16,6 +16,7 @@ spec:
         app: kalp-sdk-backend-prod
     spec:
       hostname: kalp-sdk-backend-prod
+      automountServiceAccountToken: false
       containers:
       - name: kalp-sdk-backend-prod
         image: 408153089286.dkr.ecr.ap-south-1.amazonaws.com/kalp-sdk-backend-prod:<VERSION>
