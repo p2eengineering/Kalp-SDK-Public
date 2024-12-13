@@ -14,6 +14,8 @@ import (
 )
 
 type TransactionContextInterface interface {
+	// GetCreator returns `SignatureHeader.Creator` (e.g. an identity) // of the `SignedProposal`. This is the identity of the agent (or user) // submitting the transaction.
+	GetCreator() ([]byte, error)
 	// PutStateWithKYC puts the specified `key` and `value` into the transaction's
 	// writeset as a data-write proposal, only if the user has completed KYC.
 	// If the user has not completed KYC, an error is returned.

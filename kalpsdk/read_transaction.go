@@ -11,6 +11,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func (ctx *TransactionContext) GetCreator() ([]byte, error) { return ctx.GetStub().GetCreator() }
+
 // GetChannelName retrieves the name of the channel associated with the transaction context.
 // It returns the channel name as a string and an error if the channel ID is empty or retrieval fails.
 func (ctx *TransactionContext) GetChannelName() (string, error) {
