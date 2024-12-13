@@ -4,12 +4,84 @@ import (
 	//Standard Libs
 	"encoding/base64"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	//Third party Libs
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+// IsSmartContractOwner checks if the caller is the owner of the smart contract
+// by comparing the userID of the caller with the stored smart contract owner ID.
+//
+// Returns:
+//   - bool: A boolean value indicating whether the caller is the owner of the smart contract.
+//   - error: An error if the operation fails.
+func (ctx *TransactionContext) IsSmartContractOwner() (bool, error) {
+	userID, err := ctx.GetUserID()
+	if err != nil {
+		log.Println("Error retrieving user ID:", err)
+		return false, err
+	}
+
+	ownerId, err := ctx.GetState(smartContractOwner)
+	if err != nil {
+		log.Println("Error retrieving owner ID from state:", err)
+		return false, err
+	}
+
+	isOwner := string(ownerId) == userID
+	log.Printf("Is user (%s) the owner: %t", userID, isOwner)
+	return isOwner, nil
+}
+
+// FetchOwnerHistory retrieves the transaction history of the smart contract owner.
+//
+// Returns:
+//   - []HistoryQueryResult: A slice containing the transaction history of the smart contract owner.
+//   - error: An error if the operation fails.
+func (ctx *TransactionContext) FetchOwnerHistory() ([]HistoryQueryResult, error) {
+	isOwner, err := ctx.IsSmartContractOwner()
+	if err != nil || !isOwner {
+		if err != nil {
+			return nil, err
+		} else {
+			return nil, fmt.Errorf("signer is not an owner")
+		}
+	}
+
+	resultsIterator, err := ctx.GetHistoryForKey(smartContractOwner)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resultsIterator.Close()
+
+	var records []HistoryQueryResult
+	for resultsIterator.HasNext() {
+		response, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		asset := string(response.Value)
+
+		timestampProto := response.Timestamp
+		timestamp := time.Unix(timestampProto.GetSeconds(), int64(timestampProto.GetNanos())).UTC()
+
+		record := HistoryQueryResult{
+			TxId:      response.TxId,
+			Timestamp: timestamp,
+			Record:    asset,
+			IsDelete:  response.IsDelete,
+		}
+		records = append(records, record)
+	}
+
+	return records, nil
+}
 
 // GetChannelName retrieves the name of the channel associated with the transaction context.
 // It returns the channel name as a string and an error if the channel ID is empty or retrieval fails.
