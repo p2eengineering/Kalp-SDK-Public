@@ -232,7 +232,6 @@ func (ctx *TransactionContext) GetQueryResult(query string) (StateQueryIteratorI
 // Note that only the bookmark present in a prior page of query results (ResponseMetadata)
 // can be used as a value to the bookmark argument. Otherwise, an empty string
 // must be passed as bookmark.
-// This call is only supported in a read only transaction.
 func (ctx *TransactionContext) GetQueryResultWithPagination(query string, pageSize int32,
 	bookmark string) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
 	return ctx.GetStub().GetQueryResultWithPagination(query, pageSize, bookmark)
