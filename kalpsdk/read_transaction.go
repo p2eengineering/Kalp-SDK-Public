@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	//Third party Libs
+	"github.com/hyperledger/fabric-protos-go/peer"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -217,6 +218,23 @@ func (ctx *TransactionContext) GetStateByRange(startKey string, endKey string) (
 //   - error: An error if there was a failure in performing the query.
 func (ctx *TransactionContext) GetQueryResult(query string) (StateQueryIteratorInterface, error) {
 	return ctx.GetStub().GetQueryResult(query)
+}
+
+// GetQueryResultWithPagination performs a "rich" query against a state database.
+// It is only supported for state databases that support rich query,
+// e.g., CouchDB. The query string is in the native syntax
+// of the underlying state database. An iterator is returned
+// which can be used to iterate over keys in the query result set.
+// When an empty string is passed as a value to the bookmark argument, the returned
+// iterator can be used to fetch the first `pageSize` of query results.
+// When the bookmark is a non-emptry string, the iterator can be used to fetch
+// the first `pageSize` keys between the bookmark and the last key in the query result.
+// Note that only the bookmark present in a prior page of query results (ResponseMetadata)
+// can be used as a value to the bookmark argument. Otherwise, an empty string
+// must be passed as bookmark.
+func (ctx *TransactionContext) GetQueryResultWithPagination(query string, pageSize int32,
+	bookmark string) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
+	return ctx.GetStub().GetQueryResultWithPagination(query, pageSize, bookmark)
 }
 
 // GetHistoryForKey returns a history of key values across time.
