@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	//Third party Libs
+	"github.com/hyperledger/fabric-protos-go/peer"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -217,6 +218,15 @@ func (ctx *TransactionContext) GetStateByRange(startKey string, endKey string) (
 //   - error: An error if there was a failure in performing the query.
 func (ctx *TransactionContext) GetQueryResult(query string) (StateQueryIteratorInterface, error) {
 	return ctx.GetStub().GetQueryResult(query)
+}
+
+// GetQueryResultWithPagination performs a "rich" query against a state database.
+// can be used as a value to the bookmark argument. Otherwise, an empty string
+// must be passed as bookmark.
+// This call is only supported in a read only transaction.
+func (ctx *TransactionContext) GetQueryResultWithPagination(query string, pageSize int32,
+	bookmark string) (StateQueryIteratorInterface, *peer.QueryResponseMetadata, error) {
+	return ctx.GetStub().GetQueryResultWithPagination(query, pageSize, bookmark)
 }
 
 // GetHistoryForKey returns a history of key values across time.

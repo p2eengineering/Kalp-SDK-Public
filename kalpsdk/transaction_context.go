@@ -162,6 +162,13 @@ type TransactionContextInterface interface {
 	// ledger, and should limit use to read-only chaincode operations.
 	GetQueryResult(query string) (StateQueryIteratorInterface, error)
 
+	// GetQueryResultWithPagination performs a "rich" query against a state database.
+	// can be used as a value to the bookmark argument. Otherwise, an empty string
+	// must be passed as bookmark.
+	// This call is only supported in a read only transaction.
+	GetQueryResultWithPagination(query string, pageSize int32,
+		bookmark string) (StateQueryIteratorInterface, *pb.QueryResponseMetadata, error)
+
 	// GetHistoryForKey returns a history of key values across time.
 	// For each historic key update, the historic value and associated
 	// transaction id and timestamp are returned. The timestamp is the
